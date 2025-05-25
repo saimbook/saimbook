@@ -1,0 +1,10 @@
+{
+  "name": "BookApp",
+  "short_name": "BookApp",
+  "start_url": "auth.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "description": "Progressive Web Book App",
+  "icons": []
+}
