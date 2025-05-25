@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Book Approval Panel</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    .book-card { border: 1px solid #ccc; padding: 10px; margin: 10px 0; }
+    button { margin-right: 5px; }
+  </style>
+</head>
+<body>
+  <h2>Admin Book Approval Panel</h2>
+  <button onclick="loadBooks()">Load Pending Books</button>
+  <div id="books"></div>
+  <p id="message"></p>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAPO6pFLy9_e-4QxK1j5plm3aJukorL-cc",
+      authDomain: "rikshawala-4b781.firebaseapp.com",
+      projectId: "rikshawala-4b781",
+      storageBucket: "rikshawala-4b781.firebasestorage.app",
+      messagingSenderId: "1044246140325",
+      appId: "1:1044246140325:web:2dfbb3b3f9b55466e6c44c",
+      measurementId: "G-DFT19T4JJ9"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    async function loadBooks() {
+      const booksDiv = document.getElementById("books");
+      booksDiv.innerHTML = "Loading...";
+      const querySnapshot = await getDocs(collection(db, "books"));
+      booksDiv.innerHTML = "";
+      querySnapshot.forEach((docSnap) => {
+        const book = docSnap.data();
+        if (!book.approved) {
+          const div = document.createElement("div");
+          div.className = "book-card";
+          div.innerHTML = `<b>Title:</b> ${book.title}<br><b>Content:</b> ${book.content}<br>
+          <button onclick="approveBook('${docSnap.id}')">Approve</button>
+          <button onclick="rejectBook('${docSnap.id}')">Reject</button>`;
+          booksDiv.appendChild(div);
+        }
+      });
+    }
+
+    async function approveBook(bookId) {
+      await updateDoc(doc(db, "books", bookId), { approved: true });
+      document.getElementById("message").innerText = "Book approved successfully.";
+      loadBooks();
+    }
+
+    async function rejectBook(bookId) {
+      await updateDoc(doc(db, "books", bookId), { approved: false, rejected: true });
+      document.getElementById("message").innerText = "Book rejected.";
+      loadBooks();
+    }
+  </script>
+</body>
+</html>

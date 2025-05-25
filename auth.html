@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Book App Login</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; max-width: 400px; margin: auto; }
+    input, button { width: 100%; padding: 10px; margin: 5px 0; }
+    .hidden { display: none; }
+    .tab { cursor: pointer; text-align: center; padding: 10px; background: #eee; margin-bottom: 10px; }
+    .active-tab { background: #ccc; }
+  </style>
+</head>
+<body>
+  <div class="tab active-tab" onclick="showTab('login')">Login</div>
+  <div class="tab" onclick="showTab('register')">Register</div>
+  <div class="tab" onclick="showTab('forgot')">Forgot Password</div>
+
+  <div id="login">
+    <h2>Login</h2>
+    <input type="email" id="loginEmail" placeholder="Email" />
+    <input type="password" id="loginPassword" placeholder="Password" />
+    <button onclick="login()">Login</button>
+  </div>
+
+  <div id="register" class="hidden">
+    <h2>Register</h2>
+    <input type="text" id="regName" placeholder="Full Name" />
+    <input type="email" id="regEmail" placeholder="Email" />
+    <input type="password" id="regPassword" placeholder="Password" />
+    <input type="text" id="regID" placeholder="ID Card Number" />
+    <button onclick="register()">Register</button>
+  </div>
+
+  <div id="forgot" class="hidden">
+    <h2>Forgot Password</h2>
+    <input type="email" id="forgotEmail" placeholder="Enter your email" />
+    <button onclick="forgotPassword()">Reset Password</button>
+  </div>
+
+  <p id="message"></p>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAPO6pFLy9_e-4QxK1j5plm3aJukorL-cc",
+      authDomain: "rikshawala-4b781.firebaseapp.com",
+      projectId: "rikshawala-4b781",
+      storageBucket: "rikshawala-4b781.firebasestorage.app",
+      messagingSenderId: "1044246140325",
+      appId: "1:1044246140325:web:2dfbb3b3f9b55466e6c44c",
+      measurementId: "G-DFT19T4JJ9"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    async function register() {
+      const name = document.getElementById("regName").value;
+      const email = document.getElementById("regEmail").value;
+      const password = document.getElementById("regPassword").value;
+      const idCard = document.getElementById("regID").value;
+
+      try {
+        const userCred = await createUserWithEmailAndPassword(auth, email, password);
+        await setDoc(doc(db, "users", userCred.user.uid), {
+          name,
+          email,
+          idCard,
+          role: "pending",
+          verified: false
+        });
+        document.getElementById("message").innerText = "Registration complete. Awaiting verification.";
+      } catch (e) {
+        document.getElementById("message").innerText = e.message;
+      }
+    }
+
+    async function login() {
+      const email = document.getElementById("loginEmail").value;
+      const password = document.getElementById("loginPassword").value;
+
+      try {
+        const userCred = await signInWithEmailAndPassword(auth, email, password);
+        const userDoc = await getDoc(doc(db, "users", userCred.user.uid));
+        if (userDoc.exists() && userDoc.data().role === "verified") {
+          document.getElementById("message").innerText = "Login successful! Welcome.";
+        } else {
+          document.getElementById("message").innerText = "Your account is not verified yet.";
+        }
+      } catch (e) {
+        document.getElementById("message").innerText = e.message;
+      }
+    }
+
+    async function forgotPassword() {
+      const email = document.getElementById("forgotEmail").value;
+      try {
+        await sendPasswordResetEmail(auth, email);
+        document.getElementById("message").innerText = "Password reset link sent.";
+      } catch (e) {
+        document.getElementById("message").innerText = e.message;
+      }
+    }
+
+    function showTab(tab) {
+      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active-tab"));
+      document.querySelectorAll("div[id]").forEach(d => d.classList.add("hidden"));
+      document.getElementById(tab).classList.remove("hidden");
+      event.target.classList.add("active-tab");
+    }
+  </script>
+</body>
+</html>
