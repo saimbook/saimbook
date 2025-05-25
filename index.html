@@ -1,1 +1,57 @@
 
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <title>বইয়ের অ্যাপ</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: 'Kalpurush', sans-serif; padding: 20px; background: #f7f7f7; }
+    h1 { text-align: center; color: #333; }
+    .book { background: #fff; margin: 15px 0; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .book h2 { margin: 0; color: #2c3e50; }
+    .book p { color: #555; }
+  </style>
+</head>
+<body>
+
+  <h1>আমার বইয়ের অ্যাপ</h1>
+  <div id="book-list"></div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+
+  <script>
+    // Firebase config (আপনার নিজস্ব কনফিগ বসান)
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "SENDER_ID",
+      appId: "APP_ID"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // বই লোড করার ফাংশন
+    function loadBooks() {
+      db.collection("books").get().then((querySnapshot) => {
+        const bookList = document.getElementById('book-list');
+        bookList.innerHTML = '';
+        querySnapshot.forEach((doc) => {
+          const book = doc.data();
+          const div = document.createElement('div');
+          div.className = 'book';
+          div.innerHTML = `<h2>${book.title}</h2><p><strong>লেখক:</strong> ${book.author}</p><p>${book.content}</p>`;
+          bookList.appendChild(div);
+        });
+      });
+    }
+
+    loadBooks();
+  </script>
+</body>
+</html>
